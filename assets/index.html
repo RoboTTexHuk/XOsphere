@@ -1,0 +1,266 @@
+<!DOCTYPE html><html lang="en"><head><meta name="x-poe-datastore-behavior" content="local_only"><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+  <style>
+    ::-webkit-scrollbar { display: none;}
+    body { font-family: 'Inter', sans-serif; }
+    .neon-glow { box-shadow: 0 0 20px currentColor; }
+    .neon-border { border: 1px solid currentColor; 
+      box-shadow: 0 0 15px currentColor, inset 0 0 15px rgba(255,255,255,0.1);}
+    .compass-glow { animation: pulse 3s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:0.8;}50%{opacity:1;} }
+    .mood-card { transition: all 0.3s ease; }
+    .mood-card:hover { transform: scale(1.02); }
+    /* стрелка */
+    #needle {
+      position:absolute;
+      bottom:50%; left:50%;
+      width:4px; height:110px;
+      border-radius:2px;
+      background:#ff0080;
+      box-shadow:0 0 12px #ff0080, 0 0 30px #ff0080;
+      transform:translateX(-50%) rotate(0deg);
+      transform-origin: bottom center;
+      transition: transform 1s ease, background 0.5s ease, box-shadow 0.5s ease;
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            "neon-pink": "#ff0080",
+            "neon-blue": "#00ffff",
+            "neon-green": "#00ff80",
+            "neon-purple": "#8000ff",
+            "neon-yellow": "#ffff00",
+            "neon-orange": "#ff8000"
+          }
+        }
+      }
+    };
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&amp;display=swap" rel="stylesheet">
+<script src="https://puc.poecdn.net/authenticated_preview_page/syncedState.bd4eeeb8e8e02052ee92.js"></script></head>
+<body class="bg-gradient-to-br from-gray-900 via-blue-950 to-black text-white min-h-screen">
+
+<div id="mobile-app" class="max-w-sm mx-auto min-h-screen">
+  <div id="tab-content">
+    <!-- Compass TAB -->
+    <div id="mood-compass-tab" class="tab-content active">
+      <header class="p-6 text-center">
+        <h1 class="text-2xl font-bold text-neon-blue neon-glow">Mood Compass</h1>
+        <p class="text-gray-400 text-sm mt-2">Track your emotional journey</p>
+      </header>
+
+      <!-- Compass -->
+      <div class="px-6 mb-4">
+        <div class="relative w-64 h-64 mx-auto">
+          <!-- окружность с подписями -->
+          <div class="absolute inset-0 rounded-full border-2 border-neon-blue neon-border compass-glow">
+            <div class="absolute top-2 left-1/2 -translate-x-1/2 text-neon-green text-xs font-semibold">CALM</div>
+            <div class="absolute top-8 right-8 text-neon-pink text-xs font-semibold">JOYFUL</div>
+            <div class="absolute right-2 top-1/2 -translate-y-1/2 text-neon-yellow text-xs font-semibold">FOCUSED</div>
+            <div class="absolute bottom-8 right-8 text-neon-orange text-xs font-semibold">CREATIVE</div>
+            <div class="absolute bottom-2 left-1/2 -translate-x-1/2 text-red-500 text-xs font-semibold">ANGRY</div>
+            <div class="absolute bottom-8 left-8 text-blue-400 text-xs font-semibold">SAD</div>
+            <div class="absolute left-2 top-1/2 -translate-y-1/2 text-purple-400 text-xs font-semibold">ANXIOUS</div>
+            <div class="absolute top-8 left-8 text-indigo-400 text-xs font-semibold">EXCITED</div>
+          </div>
+
+          <!-- стрелка -->
+          <div id="needle"></div>
+
+          <!-- белый центр -->
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="w-4 h-4 bg-white rounded-full neon-glow"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mood select + input -->
+      <div class="px-6 mb-8">
+        <div class="grid grid-cols-4 gap-2 mb-4">
+          <button class="mood-btn bg-neon-green/20 border border-neon-green rounded-lg py-2 text-xs" data-mood="Calm" data-score="7" data-color="#00ff80" data-angle="0">Calm</button>
+          <button class="mood-btn bg-neon-pink/20 border border-neon-pink rounded-lg py-2 text-xs" data-mood="Joyful" data-score="9" data-color="#ff0080" data-angle="45">Joyful</button>
+          <button class="mood-btn bg-neon-yellow/20 border border-neon-yellow rounded-lg py-2 text-xs" data-mood="Focused" data-score="8" data-color="#ffff00" data-angle="90">Focused</button>
+          <button class="mood-btn bg-neon-orange/20 border border-neon-orange rounded-lg py-2 text-xs" data-mood="Creative" data-score="8" data-color="#ff8000" data-angle="135">Creative</button>
+          <button class="mood-btn bg-red-500/20 border border-red-500 rounded-lg py-2 text-xs" data-mood="Angry" data-score="2" data-color="#ff4040" data-angle="180">Angry</button>
+          <button class="mood-btn bg-blue-400/20 border border-blue-400 rounded-lg py-2 text-xs" data-mood="Sad" data-score="3" data-color="#0077ff" data-angle="225">Sad</button>
+          <button class="mood-btn bg-purple-400/20 border border-purple-400 rounded-lg py-2 text-xs" data-mood="Anxious" data-score="4" data-color="#a855f7" data-angle="270">Anxious</button>
+          <button class="mood-btn bg-indigo-400/20 border border-indigo-400 rounded-lg py-2 text-xs" data-mood="Excited" data-score="9" data-color="#6366f1" data-angle="315">Excited</button>
+        </div>
+        <textarea id="mood-text" class="w-full bg-gray-800/50 border border-gray-600 rounded-lg p-3 text-white placeholder-gray-400 focus:border-neon-blue focus:ring-1 focus:ring-neon-blue resize-none" rows="3" placeholder="How are you feeling right now?"></textarea>
+        <button id="save-mood" class="w-full mt-4 bg-gradient-to-r from-neon-blue to-neon-purple py-3 rounded-lg font-semibold neon-glow hover:from-neon-purple hover:to-neon-pink transition-all">
+          <i class="fas fa-save mr-2"></i>Save Mood
+        </button>
+      </div>
+
+      <!-- История -->
+      <div class="px-6 pb-20">
+        <h3 class="text-lg font-semibold text-neon-green mb-4">Recent Moods</h3>
+        <div id="mood-history" class="space-y-3"></div>
+      </div>
+    </div>
+
+    <!-- Library TAB -->
+    <div id="mood-library-tab" class="tab-content hidden">
+      <header class="p-6 text-center">
+        <h1 class="text-2xl font-bold text-neon-green neon-glow">Mood Library</h1>
+        <p class="text-gray-400 text-sm mt-2">Understanding your emotions</p>
+      </header>
+      <div class="px-4 grid grid-cols-2 gap-4 pb-20">
+        <!-- 10 карточек эмоций -->
+        <div class="mood-card bg-gray-800/50 rounded-lg p-4 border border-neon-pink neon-border"><div class="text-neon-pink text-2xl mb-2">😊</div><h3 class="text-neon-pink font-semibold mb-2">Joyful</h3><p class="text-gray-300 text-xs">Feeling happy, energetic</p></div>
+        <div class="mood-card bg-gray-800/50 rounded-lg p-4 border border-neon-blue neon-border"><div class="text-neon-blue text-2xl mb-2">🧘</div><h3 class="text-neon-blue font-semibold mb-2">Calm</h3><p class="text-gray-300 text-xs">Relaxed and peaceful</p></div>
+        <div class="mood-card bg-gray-800/50 rounded-lg p-4 border border-neon-green neon-border"><div class="text-neon-green text-2xl mb-2">🎯</div><h3 class="text-neon-green font-semibold mb-2">Focused</h3><p class="text-gray-300 text-xs">Concentrated and alert</p></div>
+        <div class="mood-card bg-gray-800/50 rounded-lg p-4 border border-neon-orange neon-border"><div class="text-neon-orange text-2xl mb-2">🎨</div><h3 class="text-neon-orange font-semibold mb-2">Creative</h3><p class="text-gray-300 text-xs">Inspired and innovative</p></div>
+        <div class="mood-card bg-gray-800/50 rounded-lg p-4 border border-red-500 neon-border"><div class="text-red-500 text-2xl mb-2">😠</div><h3 class="text-red-500 font-semibold mb-2">Angry</h3><p class="text-gray-300 text-xs">Upset or irritated</p></div>
+        <div class="mood-card bg-gray-800/50 rounded-lg p-4 border border-blue-400 neon-border"><div class="text-blue-400 text-2xl mb-2">😢</div><h3 class="text-blue-400 font-semibold mb-2">Sad</h3><p class="text-gray-300 text-xs">Down or sorrowful</p></div>
+        <div class="mood-card bg-gray-800/50 rounded-lg p-4 border border-purple-400 neon-border"><div class="text-purple-400 text-2xl mb-2">😰</div><h3 class="text-purple-400 font-semibold mb-2">Anxious</h3><p class="text-gray-300 text-xs">Nervous or insecure</p></div>
+        <div class="mood-card bg-gray-800/50 rounded-lg p-4 border border-indigo-400 neon-border"><div class="text-indigo-400 text-2xl mb-2">🤩</div><h3 class="text-indigo-400 font-semibold mb-2">Excited</h3><p class="text-gray-300 text-xs">Thrilled, full of energy</p></div>
+        <div class="mood-card bg-gray-800/50 rounded-lg p-4 border border-yellow-400 neon-border"><div class="text-yellow-400 text-2xl mb-2">🤗</div><h3 class="text-yellow-400 font-semibold mb-2">Grateful</h3><p class="text-gray-300 text-xs">Appreciative</p></div>
+        <div class="mood-card bg-gray-800/50 rounded-lg p-4 border border-pink-400 neon-border"><div class="text-pink-400 text-2xl mb-2">😌</div><h3 class="text-pink-400 font-semibold mb-2">Relaxed</h3><p class="text-gray-300 text-xs">Comfortable</p></div>
+      </div>
+    </div>
+
+    <!-- Analytics TAB -->
+    <div id="analytics-tab" class="tab-content hidden">
+      <header class="p-6 text-center">
+        <h1 class="text-2xl font-bold text-neon-yellow neon-glow">Analytics</h1>
+        <p class="text-gray-400 text-sm mt-2">Track your mood patterns</p>
+      </header>
+      <div class="px-6 mb-6">
+        <div id="mood-chart" class="h-64 bg-gray-800/50 rounded-lg border border-gray-700"></div>
+      </div>
+      <div class="px-6 pb-20">
+        <div id="mood-stats" class="grid grid-cols-2 gap-4"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom nav -->
+  <nav id="bottom-nav" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-sm bg-gray-900/95 border-t border-gray-700">
+    <div class="flex justify-around py-3">
+      <button class="nav-btn active flex flex-col items-center space-y-1" data-tab="mood-compass-tab">
+        <i class="fas fa-compass text-neon-blue neon-glow"></i>
+        <span class="text-xs text-neon-blue">Compass</span>
+      </button>
+      <button class="nav-btn flex flex-col items-center space-y-1" data-tab="mood-library-tab">
+        <i class="fas fa-book text-gray-400"></i>
+        <span class="text-xs text-gray-400">Library</span>
+      </button>
+      <button class="nav-btn flex flex-col items-center space-y-1" data-tab="analytics-tab">
+        <i class="fas fa-chart-line text-gray-400"></i>
+        <span class="text-xs text-gray-400">Analytics</span>
+      </button>
+    </div>
+  </nav>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // fallback storage
+  let storage;
+  try { storage=window.localStorage; storage.setItem("_t","1"); storage.removeItem("_t"); }
+  catch(e){ storage={data:{},setItem(k,v){this.data[k]=v},getItem(k){return this.data[k]||null},removeItem(k){delete this.data[k]}};}
+
+  const needle=document.getElementById("needle");
+  const moodBtns=document.querySelectorAll(".mood-btn");
+  const saveBtn=document.getElementById("save-mood");
+  const textArea=document.getElementById("mood-text");
+  const history=document.getElementById("mood-history");
+  const statsDiv=document.getElementById("mood-stats");
+
+  let currentMood=null;
+  let savedMoods=JSON.parse(storage.getItem("moods")||"[]");
+  savedMoods.forEach(addHistoryItem);
+
+  moodBtns.forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      currentMood={name:btn.dataset.mood,color:btn.dataset.color,angle:btn.dataset.angle,score:+btn.dataset.score};
+      moodBtns.forEach(b=>b.classList.remove("ring-2","ring-offset-2","ring-neon-blue"));
+      btn.classList.add("ring-2","ring-offset-2","ring-neon-blue");
+    });
+  });
+
+  saveBtn.addEventListener("click", ()=>{
+    if(!currentMood){alert("Select a mood first!");return;}
+    const desc=textArea.value.trim()||"No description";
+    needle.style.transform=`translateX(-50%) rotate(${currentMood.angle}deg)`;
+    needle.style.background=currentMood.color;
+    needle.style.boxShadow=`0 0 12px ${currentMood.color},0 0 30px ${currentMood.color}`;
+    const now=new Date();
+    const moodObj={...currentMood,desc,time:now.toISOString()};
+    savedMoods.unshift(moodObj);
+    storage.setItem("moods",JSON.stringify(savedMoods));
+    addHistoryItem(moodObj);
+    textArea.value="";
+  });
+
+  function addHistoryItem(mood){
+    const div=document.createElement("div");
+    div.className="bg-gray-800/50 rounded-lg p-3 border border-gray-700";
+    const timeStr=new Date(mood.time).toLocaleString();
+    div.innerHTML=`<div class="flex justify-between items-start mb-2">
+      <span class="text-sm font-medium" style="color:${mood.color}">${mood.name}</span>
+      <span class="text-gray-400 text-xs">${timeStr}</span></div>
+      <p class="text-gray-300 text-sm">${mood.desc}</p>`;
+    history.prepend(div);
+  }
+
+  const navBtns=document.querySelectorAll(".nav-btn");
+  const tabs=document.querySelectorAll(".tab-content");
+  navBtns.forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      tabs.forEach(t=>t.classList.add("hidden"));
+      document.getElementById(btn.dataset.tab).classList.remove("hidden");
+      navBtns.forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      if(btn.dataset.tab==="analytics-tab"){ setTimeout(drawAnalytics,100);}
+    });
+  });
+
+  function drawAnalytics(){
+    if(!savedMoods.length)return;
+    const points=savedMoods.map(m=>({y:m.score,color:m.color}));
+    const categories=savedMoods.map(m=>new Date(m.time).toLocaleDateString());
+    Highcharts.chart("mood-chart",{
+      chart:{backgroundColor:"transparent",type:"spline"},
+      credits:{enabled:false},
+      title:{text:null},
+      xAxis:{categories}, 
+      yAxis:{min:0,max:10,title:{text:null}},
+      legend:{enabled:false},
+      plotOptions:{spline:{marker:{enabled:true,radius:4}}},
+      series:[{name:"Mood Score",data:points}]
+    });
+    const avg=(savedMoods.reduce((a,b)=>a+b.score,0)/savedMoods.length).toFixed(1);
+    const bestMood=[...savedMoods].sort((a,b)=>b.score-a.score)[0];
+    statsDiv.innerHTML=`
+      <div class="bg-gray-800/50 rounded-lg p-4 border border-neon-green neon-border">
+        <div class="text-neon-green text-sm font-medium">Entries</div>
+        <div class="text-2xl font-bold text-white mt-1">${savedMoods.length}</div>
+      </div>
+      <div class="bg-gray-800/50 rounded-lg p-4 border border-neon-yellow neon-border">
+        <div class="text-neon-yellow text-sm font-medium">Avg Score</div>
+        <div class="text-2xl font-bold text-white mt-1">${avg}</div>
+        <div class="text-gray-400 text-xs">Out of 10</div>
+      </div>
+      <div class="bg-gray-800/50 rounded-lg p-4 border border-neon-pink neon-border">
+        <div class="text-neon-pink text-sm font-medium">Best Mood</div>
+        <div class="text-lg font-bold text-white mt-1">${bestMood.name}</div>
+      </div>
+      <div class="bg-gray-800/50 rounded-lg p-4 border border-neon-blue neon-border">
+        <div class="text-neon-blue text-sm font-medium">Last Entry</div>
+        <div class="text-lg font-bold text-white mt-1">${new Date(savedMoods[0].time).toLocaleDateString()}</div>
+      </div>`;
+  }
+});
+</script>
+
+
+</body></html>
