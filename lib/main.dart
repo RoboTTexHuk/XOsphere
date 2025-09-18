@@ -238,13 +238,13 @@ class A9Trace with ChangeNotifier {
 
     core?.onInstallConversionData((res) {
       raw = res.toString();
-      if (kDebugMode) print("AF conv: $raw");
+      print("AF conv: $raw");
       cb();
       notifyListeners();
     });
 
     core?.onAppOpenAttribution((res) {
-      if (kDebugMode) print("AF open attrib: $res");
+    print("AF open attrib: $res");
     });
 
     core?.initSdk(
@@ -260,11 +260,11 @@ class A9Trace with ChangeNotifier {
 
     core?.getAppsFlyerUID().then((v) {
       uid = v.toString();
-      if (kDebugMode) print("AF UID: $uid");
+     print("AF UID: $uid");
       cb();
       notifyListeners();
     }).catchError((e) {
-      if (kDebugMode) print("AF UID err: $e");
+    print("AF UID err: $e");
     });
   }
 }
@@ -329,7 +329,7 @@ class _Q8HostCoreState extends State<Q8HostCore> with WidgetsBindingObserver {
     });
 
     final c = await net.checkConnectivity();
-    if (kDebugMode) print("Connectivity: $c");
+   print("Connectivity: $c");
   }
 
   void _fakeProgress() {
@@ -359,7 +359,7 @@ class _Q8HostCoreState extends State<Q8HostCore> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState s) {
     if (s == AppLifecycleState.resumed) {
-      if (kDebugMode) print("App resumed");
+     print("App resumed");
     }
   }
 
@@ -382,7 +382,7 @@ class _Q8HostCoreState extends State<Q8HostCore> with WidgetsBindingObserver {
   // Отправка данных в JS (как в исходном — строкой JSON)
   Future<void> _emit(String cv) async {
     if (web == null) {
-      if (kDebugMode) print('_emit: WebView is null');
+   print('_emit: WebView is null');
       return;
     }
 
@@ -416,16 +416,16 @@ class _Q8HostCoreState extends State<Q8HostCore> with WidgetsBindingObserver {
     };
 
     final s = jsonEncode(body);
-    if (kDebugMode) print("SendRawData: $s");
+  print("SendRawData: $s");
 
     try {
       await _waitJs(timeout: const Duration(seconds: 5));
       final res = await web!.evaluateJavascript(
         source: "sendRawData(${jsonEncode(s)});",
       );
-      if (kDebugMode) print("_emit dispatched, js result: $res");
+    print("_emit dispatched, js result: $res");
     } catch (e) {
-      if (kDebugMode) print("_emit JS error: $e");
+     print("_emit JS error: $e");
     }
   }
 
@@ -467,23 +467,41 @@ class _Q8HostCoreState extends State<Q8HostCore> with WidgetsBindingObserver {
                               final mp = args.isNotEmpty && args.first is Map ? args.first as Map : {};
 
                               print("MP load "+mp.toString());
-                              if (kDebugMode) print("loadRESgg ${mp['savedata']}");
-                              try {
-                                if (kDebugMode && mp.containsKey('savedata')) {
-                                  print("loadRES ${mp['savedata']}");
 
-                                  if(mp['savedata'].toString()=="false") {
+                              try {
+                                final mp = args.isNotEmpty && args.first is Map ? (args.first as Map) : <String, dynamic>{};
+
+                                final savedataStr = mp['savedata']?.toString() ?? '';
+                                if (savedataStr == "false") {
+                                  // Берём url и нормализуем
+                                  final urlRaw = mp['url'];
+                                  final urlStr = urlRaw?.toString().trim() ?? '';
+
+                                  // Условия: пусто или содержит "google" (без учёта регистра)
+                                  final isEmptyUrl = urlStr.isEmpty;
+                                  final hasGoogle = urlStr.toLowerCase().contains('google');
+
+                                  if (isEmptyUrl || hasGoogle) {
                                     Navigator.pushAndRemoveUntil(
                                       context,
-                                      MaterialPageRoute(
-                                        builder: (context) => SupportScreen(),
-                                      ),
+                                      MaterialPageRoute(builder: (context) => SupportScreen()),
                                           (route) => false,
                                     );
+                                    return "ok";
                                   }
+
+                                  // Иначе (savedata == false, но url валидная и без "google")
+                                  // Если вы хотите ВСЕГДА уходить на SupportScreen при savedata == false,
+                                  // оставьте этот блок. Если не нужно — удалите.
+                                  Navigator.pushAndRemoveUntil(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => SupportScreen()),
+                                        (route) => false,
+                                  );
+                                  return "ok";
                                 }
                               } catch (e) {
-                                if (kDebugMode) print("server echo parse error: $e");
+                               // if (kDebugMode) print("server echo parse error: $e");
                               }
                               return "ok";
                             },

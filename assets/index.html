@@ -1,32 +1,19 @@
-<!DOCTYPE html><html lang="en"><head><meta name="x-poe-datastore-behavior" content="local_only"><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="x-poe-datastore-behavior" content="local_only">
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Mood Compass + XOsphere Privacy Consent</title>
+
+  <!-- CSP (оставлен из вашего примера, можно при необходимости сократить источники) -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+
+  <!-- Tailwind, FontAwesome, Highcharts -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
   <script src="https://code.highcharts.com/highcharts.js"></script>
-  <style>
-    ::-webkit-scrollbar { display: none;}
-    body { font-family: 'Inter', sans-serif; }
-    .neon-glow { box-shadow: 0 0 20px currentColor; }
-    .neon-border { border: 1px solid currentColor; 
-      box-shadow: 0 0 15px currentColor, inset 0 0 15px rgba(255,255,255,0.1);}
-    .compass-glow { animation: pulse 3s ease-in-out infinite; }
-    @keyframes pulse { 0%,100%{opacity:0.8;}50%{opacity:1;} }
-    .mood-card { transition: all 0.3s ease; }
-    .mood-card:hover { transform: scale(1.02); }
-    /* стрелка */
-    #needle {
-      position:absolute;
-      bottom:50%; left:50%;
-      width:4px; height:110px;
-      border-radius:2px;
-      background:#ff0080;
-      box-shadow:0 0 12px #ff0080, 0 0 30px #ff0080;
-      transform:translateX(-50%) rotate(0deg);
-      transform-origin: bottom center;
-      transition: transform 1s ease, background 0.5s ease, box-shadow 0.5s ease;
-    }
-  </style>
+
   <script>
     tailwind.config = {
       theme: {
@@ -43,10 +30,194 @@
       }
     };
   </script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&amp;display=swap" rel="stylesheet">
-<script src="https://puc.poecdn.net/authenticated_preview_page/syncedState.bd4eeeb8e8e02052ee92.js"></script></head>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    ::-webkit-scrollbar { display: none; }
+    body { font-family: 'Inter', sans-serif; }
+    .neon-glow { box-shadow: 0 0 20px currentColor; }
+    .neon-border { border: 1px solid currentColor; box-shadow: 0 0 15px currentColor, inset 0 0 15px rgba(255,255,255,0.1); }
+    .compass-glow { animation: pulse 3s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:0.8;}50%{opacity:1;} }
+    .mood-card { transition: all 0.3s ease; }
+    .mood-card:hover { transform: scale(1.02); }
+    /* стрелка компаса */
+    #needle {
+      position:absolute; bottom:50%; left:50%;
+      width:4px; height:110px; border-radius:2px;
+      background:#ff0080;
+      box-shadow:0 0 12px #ff0080, 0 0 30px #ff0080;
+      transform:translateX(-50%) rotate(0deg);
+      transform-origin: bottom center;
+      transition: transform 1s ease, background 0.5s ease, box-shadow 0.5s ease;
+    }
+
+    /* Стартовый overlay c политикой */
+    :root {
+      --pp-bg: rgba(2, 6, 23, 0.92);
+      --pp-border: rgba(148, 163, 184, 0.2);
+      --pp-text: #e5e7eb;
+      --pp-muted: #94a3b8;
+      --pp-accent: #ff7a00;
+      --pp-accent-2: #ff9f40;
+    }
+    #consent-overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      display: grid; place-items: center;
+      padding: 16px;
+      background:
+        radial-gradient(1200px 800px at 50% -10%, #1b2540 0%, #0b0f1a 60%),
+        linear-gradient(180deg, #0b0f1a 0%, #06080f 100%);
+      transition: opacity .25s ease, visibility .25s ease;
+    }
+    #consent-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    .consent-card {
+      width: 100%; max-width: 860px;
+      background: var(--pp-bg);
+      border: 1px solid var(--pp-border);
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.03);
+      color: var(--pp-text);
+      overflow: hidden;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    .consent-head { padding: 20px 20px 0; display: flex; align-items: center; gap: 12px; }
+    .consent-badge {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--pp-accent), var(--pp-accent-2));
+      display: grid; place-items: center;
+      color: #0b0f1a; font-weight: 800; letter-spacing: 0.5px;
+      box-shadow: 0 0 24px rgba(255,122,0,0.35);
+      user-select: none;
+    }
+    .consent-title { font-size: 20px; font-weight: 800; }
+    .consent-sub { font-size: 12px; color: var(--pp-muted); margin-top: 2px; }
+    .consent-body {
+      padding: 12px 20px 0;
+      max-height: min(64vh, 560px);
+      overflow: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #243049 transparent;
+    }
+    .consent-body::-webkit-scrollbar { width: 8px; height: 8px; }
+    .consent-body::-webkit-scrollbar-thumb { background: #243049; border-radius: 8px; }
+    .consent-body h2 { font-size: 16px; margin: 18px 0 8px; color: #ffffff; }
+    .consent-body p, .consent-body li { color: #d1d5db; line-height: 1.55; font-size: 14px; }
+    .consent-body ul { padding-left: 18px; margin: 8px 0 12px; }
+    .consent-divider { height: 1px; background: linear-gradient(90deg, transparent, #223054, transparent); margin: 16px 0; }
+    .consent-foot {
+      padding: 12px 20px 20px; display: grid; gap: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    }
+    .consent-check { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; }
+    .consent-check input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--pp-accent); }
+    .consent-btn {
+      background: linear-gradient(135deg, var(--pp-accent), var(--pp-accent-2));
+      color: #0b0f1a; font-weight: 800; padding: 12px 16px;
+      border-radius: 10px; border: 0; cursor: pointer;
+      box-shadow: 0 12px 30px rgba(255,122,0,0.25), inset 0 1px 0 rgba(255,255,255,0.25);
+      transition: transform .12s ease, filter .2s ease, box-shadow .2s ease;
+    }
+    .consent-btn:disabled { filter: grayscale(0.6) brightness(0.7); cursor: not-allowed; box-shadow: none; }
+    .consent-note { font-size: 12px; color: #cbd5e1; text-align: center; }
+    @media (min-width:560px){
+      .consent-head{padding:24px 24px 0;}
+      .consent-body{padding:16px 24px 0;}
+      .consent-foot{padding:16px 24px 24px;}
+      .consent-title{font-size:22px;}
+    }
+  </style>
+  <script src="https://puc.poecdn.net/authenticated_preview_page/syncedState.bd4eeeb8e8e02052ee92.js"></script>
+</head>
 <body class="bg-gradient-to-br from-gray-900 via-blue-950 to-black text-white min-h-screen">
 
+<!-- START: Privacy Consent Overlay -->
+<div id="consent-overlay" class="">
+  <main class="consent-card" role="dialog" aria-modal="true" aria-labelledby="pp-title">
+    <header class="consent-head">
+      <div class="consent-badge" aria-hidden="true">XO</div>
+      <div>
+        <div id="pp-title" class="consent-title">XOsphere Privacy Policy</div>
+        <div class="consent-sub">Please review and confirm to continue</div>
+      </div>
+    </header>
+
+    <section class="consent-body" aria-label="Privacy policy text">
+      <p>This privacy policy applies to the XOsphere app (hereby referred to as "Application") for mobile devices that was created by Merve Uzun (hereby referred to as "Service Provider") as a Free service. This service is intended for use "AS IS".</p>
+
+      <h2>Information Collection and Use</h2>
+      <p>The Application collects information when you download and use it. This information may include information such as</p>
+      <ul>
+        <li>Your device's Internet Protocol address (e.g. IP address)</li>
+        <li>The pages of the Application that you visit, the time and date of your visit, the time spent on those pages</li>
+        <li>The time spent on the Application</li>
+        <li>The operating system you use on your mobile device</li>
+      </ul>
+
+      <p>The Application does not gather precise information about the location of your mobile device.</p>
+
+      <p>The Application collects your device's location, which helps the Service Provider determine your approximate geographical location and make use of in below ways:</p>
+      <ul>
+        <li><strong>Geolocation Services:</strong> The Service Provider utilizes location data to provide features such as personalized content, relevant recommendations, and location-based services.</li>
+        <li><strong>Analytics and Improvements:</strong> Aggregated and anonymized location data helps the Service Provider to analyze user behavior, identify trends, and improve the overall performance and functionality of the Application.</li>
+        <li><strong>Third-Party Services:</strong> Periodically, the Service Provider may transmit anonymized location data to external services. These services assist them in enhancing the Application and optimizing their offerings.</li>
+      </ul>
+
+      <p>The Service Provider may use the information you provided to contact you from time to time to provide you with important information, required notices and marketing promotions.</p>
+
+      <p>For a better experience, while using the Application, the Service Provider may require you to provide us with certain personally identifiable information, including but not limited to Uzunmerve2@icloud.com. The information that the Service Provider request will be retained by them and used as described in this privacy policy.</p>
+
+      <h2>Third Party Access</h2>
+      <p>Only aggregated, anonymized data is periodically transmitted to external services to aid the Service Provider in improving the Application and their service. The Service Provider may share your information with third parties in the ways that are described in this privacy statement.</p>
+
+      <p>The Service Provider may disclose User Provided and Automatically Collected Information:</p>
+      <ul>
+        <li>as required by law, such as to comply with a subpoena, or similar legal process;</li>
+        <li>when they believe in good faith that disclosure is necessary to protect their rights, protect your safety or the safety of others, investigate fraud, or respond to a government request;</li>
+        <li>with their trusted services providers who work on their behalf, do not have an independent use of the information we disclose to them, and have agreed to adhere to the rules set forth in this privacy statement.</li>
+      </ul>
+
+      <h2>Opt-Out Rights</h2>
+      <p>You can stop all collection of information by the Application easily by uninstalling it. You may use the standard uninstall processes as may be available as part of your mobile device or via the mobile application marketplace or network.</p>
+
+      <h2>Data Retention Policy</h2>
+      <p>The Service Provider will retain User Provided data for as long as you use the Application and for a reasonable time thereafter. If you'd like them to delete User Provided Data that you have provided via the Application, please contact them at Uzunmerve2@icloud.com and they will respond in a reasonable time.</p>
+
+      <h2>Children</h2>
+      <p>The Service Provider does not use the Application to knowingly solicit data from or market to children under the age of 13.</p>
+      <p>The Service Provider does not knowingly collect personally identifiable information from children. The Service Provider encourages all children to never submit any personally identifiable information through the Application and/or Services. The Service Provider encourage parents and legal guardians to monitor their children's Internet usage and to help enforce this Policy by instructing their children never to provide personally identifiable information through the Application and/or Services without their permission. If you have reason to believe that a child has provided personally identifiable information to the Service Provider through the Application and/or Services, please contact the Service Provider (Uzunmerve2@icloud.com) so that they will be able to take the necessary actions. You must also be at least 16 years of age to consent to the processing of your personally identifiable information in your country (in some countries we may allow your parent or guardian to do so on your behalf).</p>
+
+      <h2>Security</h2>
+      <p>The Service Provider is concerned about safeguarding the confidentiality of your information. The Service Provider provides physical, electronic, and procedural safeguards to protect information the Service Provider processes and maintains.</p>
+
+      <h2>Changes</h2>
+      <p>This Privacy Policy may be updated from time to time for any reason. The Service Provider will notify you of any changes to the Privacy Policy by updating this page with the new Privacy Policy. You are advised to consult this Privacy Policy regularly for any changes, as continued use is deemed approval of all changes.</p>
+
+      <p>This privacy policy is effective as of 2025-09-14</p>
+
+      <h2>Your Consent</h2>
+      <p>By using the Application, you are consenting to the processing of your information as set forth in this Privacy Policy now and as amended by us.</p>
+
+      <h2>Contact Us</h2>
+      <p>If you have any questions regarding privacy while using the Application, or have questions about the practices, please contact the Service Provider via email at Uzunmerve2@icloud.com.</p>
+
+      <div class="consent-divider"></div>
+      <p class="text-center text-sm text-slate-400">This privacy policy page was generated by App Privacy Policy Generator</p>
+    </section>
+
+    <section class="consent-foot">
+      <label class="consent-check">
+        <input id="consent-checkbox" type="checkbox">
+        <span>I have read and agree to the XOsphere Privacy Policy.</span>
+      </label>
+      <button id="consent-accept" class="consent-btn" disabled>Agree and Continue</button>
+      <p class="consent-note">Your choice will be remembered on this device.</p>
+    </section>
+  </main>
+</div>
+<!-- END: Privacy Consent Overlay -->
+
+<!-- Ваше приложение -->
 <div id="mobile-app" class="max-w-sm mx-auto min-h-screen">
   <div id="tab-content">
     <!-- Compass TAB -->
@@ -162,105 +333,136 @@
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-  // fallback storage
-  let storage;
-  try { storage=window.localStorage; storage.setItem("_t","1"); storage.removeItem("_t"); }
-  catch(e){ storage={data:{},setItem(k,v){this.data[k]=v},getItem(k){return this.data[k]||null},removeItem(k){delete this.data[k]}};}
+  document.addEventListener("DOMContentLoaded", function() {
+    // ====== CONSENT OVERLAY ======
+    const CONSENT_KEY = 'xosphere_privacy_consent_v1';
+    const overlay = document.getElementById('consent-overlay');
+    const cb = document.getElementById('consent-checkbox');
+    const btn = document.getElementById('consent-accept');
 
-  const needle=document.getElementById("needle");
-  const moodBtns=document.querySelectorAll(".mood-btn");
-  const saveBtn=document.getElementById("save-mood");
-  const textArea=document.getElementById("mood-text");
-  const history=document.getElementById("mood-history");
-  const statsDiv=document.getElementById("mood-stats");
+    const priorConsent = (() => {
+      try { return localStorage.getItem(CONSENT_KEY); } catch(e) { return null; }
+    })();
 
-  let currentMood=null;
-  let savedMoods=JSON.parse(storage.getItem("moods")||"[]");
-  savedMoods.forEach(addHistoryItem);
+    if (priorConsent === '1') {
+      overlay.classList.add('hidden');
+    } else {
+      btn.disabled = true;
+      cb.addEventListener('change', () => { btn.disabled = !cb.checked; });
+      btn.addEventListener('click', () => {
+        if (!cb.checked) return;
+        try { localStorage.setItem(CONSENT_KEY, '1'); } catch(e) {}
+        overlay.style.opacity = '1';
+        overlay.style.transition = 'opacity .25s ease, visibility .25s ease';
+        requestAnimationFrame(() => {
+          overlay.style.opacity = '0';
+          setTimeout(() => overlay.classList.add('hidden'), 260);
+        });
+      });
+    }
 
-  moodBtns.forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      currentMood={name:btn.dataset.mood,color:btn.dataset.color,angle:btn.dataset.angle,score:+btn.dataset.score};
-      moodBtns.forEach(b=>b.classList.remove("ring-2","ring-offset-2","ring-neon-blue"));
-      btn.classList.add("ring-2","ring-offset-2","ring-neon-blue");
+    // ====== APP CORE (из вашего приложения) ======
+    // fallback storage
+    let storage;
+    try { storage=window.localStorage; storage.setItem("_t","1"); storage.removeItem("_t"); }
+    catch(e){ storage={data:{},setItem(k,v){this.data[k]=v},getItem(k){return this.data[k]||null},removeItem(k){delete this.data[k]}};}
+
+    const needle=document.getElementById("needle");
+    const moodBtns=document.querySelectorAll(".mood-btn");
+    const saveBtn=document.getElementById("save-mood");
+    const textArea=document.getElementById("mood-text");
+    const history=document.getElementById("mood-history");
+    const statsDiv=document.getElementById("mood-stats");
+
+    let currentMood=null;
+    let savedMoods=JSON.parse(storage.getItem("moods")||"[]");
+    savedMoods.forEach(addHistoryItem);
+
+    moodBtns.forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        currentMood={name:btn.dataset.mood,color:btn.dataset.color,angle:btn.dataset.angle,score:+btn.dataset.score};
+        moodBtns.forEach(b=>b.classList.remove("ring-2","ring-offset-2","ring-neon-blue"));
+        btn.classList.add("ring-2","ring-offset-2","ring-neon-blue");
+      });
     });
-  });
 
-  saveBtn.addEventListener("click", ()=>{
-    if(!currentMood){alert("Select a mood first!");return;}
-    const desc=textArea.value.trim()||"No description";
-    needle.style.transform=`translateX(-50%) rotate(${currentMood.angle}deg)`;
-    needle.style.background=currentMood.color;
-    needle.style.boxShadow=`0 0 12px ${currentMood.color},0 0 30px ${currentMood.color}`;
-    const now=new Date();
-    const moodObj={...currentMood,desc,time:now.toISOString()};
-    savedMoods.unshift(moodObj);
-    storage.setItem("moods",JSON.stringify(savedMoods));
-    addHistoryItem(moodObj);
-    textArea.value="";
-  });
-
-  function addHistoryItem(mood){
-    const div=document.createElement("div");
-    div.className="bg-gray-800/50 rounded-lg p-3 border border-gray-700";
-    const timeStr=new Date(mood.time).toLocaleString();
-    div.innerHTML=`<div class="flex justify-between items-start mb-2">
-      <span class="text-sm font-medium" style="color:${mood.color}">${mood.name}</span>
-      <span class="text-gray-400 text-xs">${timeStr}</span></div>
-      <p class="text-gray-300 text-sm">${mood.desc}</p>`;
-    history.prepend(div);
-  }
-
-  const navBtns=document.querySelectorAll(".nav-btn");
-  const tabs=document.querySelectorAll(".tab-content");
-  navBtns.forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      tabs.forEach(t=>t.classList.add("hidden"));
-      document.getElementById(btn.dataset.tab).classList.remove("hidden");
-      navBtns.forEach(b=>b.classList.remove("active"));
-      btn.classList.add("active");
-      if(btn.dataset.tab==="analytics-tab"){ setTimeout(drawAnalytics,100);}
+    saveBtn.addEventListener("click", ()=>{
+      if(!currentMood){alert("Select a mood first!");return;}
+      const desc=textArea.value.trim()||"No description";
+      needle.style.transform=`translateX(-50%) rotate(${currentMood.angle}deg)`;
+      needle.style.background=currentMood.color;
+      needle.style.boxShadow=`0 0 12px ${currentMood.color},0 0 30px ${currentMood.color}`;
+      const now=new Date();
+      const moodObj={...currentMood,desc,time:now.toISOString()};
+      savedMoods.unshift(moodObj);
+      storage.setItem("moods",JSON.stringify(savedMoods));
+      addHistoryItem(moodObj);
+      textArea.value="";
     });
-  });
 
-  function drawAnalytics(){
-    if(!savedMoods.length)return;
-    const points=savedMoods.map(m=>({y:m.score,color:m.color}));
-    const categories=savedMoods.map(m=>new Date(m.time).toLocaleDateString());
-    Highcharts.chart("mood-chart",{
-      chart:{backgroundColor:"transparent",type:"spline"},
-      credits:{enabled:false},
-      title:{text:null},
-      xAxis:{categories}, 
-      yAxis:{min:0,max:10,title:{text:null}},
-      legend:{enabled:false},
-      plotOptions:{spline:{marker:{enabled:true,radius:4}}},
-      series:[{name:"Mood Score",data:points}]
+    function addHistoryItem(mood){
+      const div=document.createElement("div");
+      div.className="bg-gray-800/50 rounded-lg p-3 border border-gray-700";
+      const timeStr=new Date(mood.time).toLocaleString();
+      div.innerHTML=`<div class="flex justify-between items-start mb-2">
+        <span class="text-sm font-medium" style="color:${mood.color}">${mood.name}</span>
+        <span class="text-gray-400 text-xs">${timeStr}</span></div>
+        <p class="text-gray-300 text-sm">${mood.desc}</p>`;
+      history.prepend(div);
+    }
+
+    const navBtns=document.querySelectorAll(".nav-btn");
+    const tabs=document.querySelectorAll(".tab-content");
+    navBtns.forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        tabs.forEach(t=>t.classList.add("hidden"));
+        document.getElementById(btn.dataset.tab).classList.remove("hidden");
+        navBtns.forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        if(btn.dataset.tab==="analytics-tab"){ setTimeout(drawAnalytics,100);}
+      });
     });
-    const avg=(savedMoods.reduce((a,b)=>a+b.score,0)/savedMoods.length).toFixed(1);
-    const bestMood=[...savedMoods].sort((a,b)=>b.score-a.score)[0];
-    statsDiv.innerHTML=`
-      <div class="bg-gray-800/50 rounded-lg p-4 border border-neon-green neon-border">
-        <div class="text-neon-green text-sm font-medium">Entries</div>
-        <div class="text-2xl font-bold text-white mt-1">${savedMoods.length}</div>
-      </div>
-      <div class="bg-gray-800/50 rounded-lg p-4 border border-neon-yellow neon-border">
-        <div class="text-neon-yellow text-sm font-medium">Avg Score</div>
-        <div class="text-2xl font-bold text-white mt-1">${avg}</div>
-        <div class="text-gray-400 text-xs">Out of 10</div>
-      </div>
-      <div class="bg-gray-800/50 rounded-lg p-4 border border-neon-pink neon-border">
-        <div class="text-neon-pink text-sm font-medium">Best Mood</div>
-        <div class="text-lg font-bold text-white mt-1">${bestMood.name}</div>
-      </div>
-      <div class="bg-gray-800/50 rounded-lg p-4 border border-neon-blue neon-border">
-        <div class="text-neon-blue text-sm font-medium">Last Entry</div>
-        <div class="text-lg font-bold text-white mt-1">${new Date(savedMoods[0].time).toLocaleDateString()}</div>
-      </div>`;
-  }
-});
+
+    function drawAnalytics(){
+      if(!savedMoods.length){
+        document.getElementById("mood-chart").innerHTML = '<div class="h-64 flex items-center justify-center text-gray-400 text-sm">No data yet</div>';
+        statsDiv.innerHTML='';
+        return;
+      }
+      const points=savedMoods.map(m=>({y:m.score,color:m.color}));
+      const categories=savedMoods.map(m=>new Date(m.time).toLocaleDateString());
+      Highcharts.chart("mood-chart",{
+        chart:{backgroundColor:"transparent",type:"spline"},
+        credits:{enabled:false},
+        title:{text:null},
+        xAxis:{categories, labels:{style:{color:'#cbd5e1'}}},
+        yAxis:{min:0,max:10,title:{text:null}, labels:{style:{color:'#cbd5e1'}}},
+        legend:{enabled:false},
+        plotOptions:{spline:{marker:{enabled:true,radius:4}}},
+        series:[{name:"Mood Score",data:points}]
+      });
+      const avg=(savedMoods.reduce((a,b)=>a+b.score,0)/savedMoods.length).toFixed(1);
+      const bestMood=[...savedMoods].sort((a,b)=>b.score-a.score)[0];
+      statsDiv.innerHTML=`
+        <div class="bg-gray-800/50 rounded-lg p-4 border border-neon-green neon-border">
+          <div class="text-neon-green text-sm font-medium">Entries</div>
+          <div class="text-2xl font-bold text-white mt-1">${savedMoods.length}</div>
+        </div>
+        <div class="bg-gray-800/50 rounded-lg p-4 border border-neon-yellow neon-border">
+          <div class="text-neon-yellow text-sm font-medium">Avg Score</div>
+          <div class="text-2xl font-bold text-white mt-1">${avg}</div>
+          <div class="text-gray-400 text-xs">Out of 10</div>
+        </div>
+        <div class="bg-gray-800/50 rounded-lg p-4 border border-neon-pink neon-border">
+          <div class="text-neon-pink text-sm font-medium">Best Mood</div>
+          <div class="text-lg font-bold text-white mt-1">${bestMood.name}</div>
+        </div>
+        <div class="bg-gray-800/50 rounded-lg p-4 border border-neon-blue neon-border">
+          <div class="text-neon-blue text-sm font-medium">Last Entry</div>
+          <div class="text-lg font-bold text-white mt-1">${new Date(savedMoods[0].time).toLocaleDateString()}</div>
+        </div>`;
+    }
+  });
 </script>
-
-
-</body></html>
+</body>
+</html>
